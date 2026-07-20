@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Readic — The smarter way to grow your vocabulary</title>
+  <meta name="description" content="Select any word while reading. Get the meaning instantly. Save it, translate it, and master it. Your personal vocabulary coach, built into your browser." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blue:        #2563EB;
+      --blue-dark:   #1D4ED8;
+      --blue-light:  #EFF6FF;
+      --blue-mid:    #BFDBFE;
+      --ink:         #0F172A;
+      --ink-2:       #334155;
+      --ink-3:       #64748B;
+      --cream:       #FAFAF7;
+      --cream-2:     #F1F0EB;
+      --border:      #E2E8F0;
+      --white:       #FFFFFF;
+      --success:     #16A34A;
+      --font-serif:  'Lora', Georgia, serif;
+      --font-sans:   'DM Sans', system-ui, sans-serif;
+      --radius:      12px;
+      --radius-lg:   20px;
+      --shadow:      0 4px 24px rgba(15,23,42,0.08);
+      --shadow-lg:   0 12px 48px rgba(15,23,42,0.12);
+    }
+
+    html { scroll-behavior: smooth; font-size: 16px; }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--cream);
+      color: var(--ink);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── Nav ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 5%;
+      height: 64px;
+      background: rgba(250,250,247,0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(226,232,240,0.6);
+      transition: box-shadow 0.3s;
+    }
+    nav.scrolled { box-shadow: 0 2px 20px rgba(15,23,42,0.06); }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 9px;
+      font-family: var(--font-serif); font-size: 1.2rem; font-weight: 600;
+      color: var(--ink); text-decoration: none;
+    }
+    .nav-logo-mark {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .nav-logo-mark svg { width: 16px; height: 16px; }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 8px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 0.875rem; color: var(--ink-2); text-decoration: none;
+      padding: 6px 14px; border-radius: 8px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .nav-links a:hover { background: var(--cream-2); color: var(--ink); }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      font-family: var(--font-sans); font-weight: 500; font-size: 0.9rem;
+      padding: 0.6rem 1.25rem; border-radius: var(--radius);
+      border: 1.5px solid transparent; cursor: pointer;
+      text-decoration: none; transition: all 0.18s; white-space: nowrap;
+    }
+    .btn-primary {
+      background: var(--blue); color: #fff; border-color: var(--blue);
+    }
+    .btn-primary:hover { background: var(--blue-dark); border-color: var(--blue-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(37,99,235,0.3); }
+    .btn-outline {
+      background: transparent; color: var(--ink); border-color: var(--border);
+    }
+    .btn-outline:hover { background: var(--cream-2); border-color: var(--ink-3); }
+    .btn-lg { padding: 0.85rem 1.75rem; font-size: 1rem; border-radius: var(--radius-lg); }
+    .btn-xl { padding: 1rem 2.25rem; font-size: 1.05rem; border-radius: var(--radius-lg); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 100px 5% 80px;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+
+    /* Background grid pattern */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image:
+        linear-gradient(rgba(37,99,235,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37,99,235,0.04) 1px, transparent 1px);
+      background-size: 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, black 40%, transparent 100%);
+    }
+
+    /* Blue glow */
+    .hero::after {
+      content: '';
+      position: absolute; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 800px; height: 600px;
+      background: radial-gradient(ellipse, rgba(37,99,235,0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 7px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 99px; padding: 5px 14px 5px 10px;
+      font-size: 0.8rem; color: var(--ink-2);
+      margin-bottom: 2rem; position: relative; z-index: 1;
+      box-shadow: var(--shadow);
+      animation: fadeUp 0.6s ease both;
+    }
+    .hero-badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--success);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+    @keyframes pulse-dot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50% { opacity:0.6; transform:scale(0.85); }
+    }
+
+    .hero-headline {
+      font-family: var(--font-serif);
+      font-size: clamp(2.4rem, 6vw, 4.2rem);
+      font-weight: 600; line-height: 1.12;
+      color: var(--ink); letter-spacing: -0.02em;
+      max-width: 760px; margin-bottom: 1.25rem;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+    .hero-headline em {
+      font-style: italic; color: var(--blue);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--ink-3); max-width: 480px;
+      margin-bottom: 2.5rem; line-height: 1.7;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-ctas {
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap; justify-content: center;
+      position: relative; z-index: 1;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .hero-note {
+      font-size: 0.78rem; color: var(--ink-3);
+      margin-top: 1rem; position: relative; z-index: 1;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    /* ── Tooltip demo ── */
+    .hero-demo {
+      margin-top: 4rem; position: relative; z-index: 1;
+      animation: fadeUp 0.7s 0.5s ease both;
+      max-width: 680px; width: 100%;
+    }
+
+    .demo-browser {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); overflow: hidden;
+      box-shadow: var(--shadow-lg);
+    }
+
+    .demo-browser-bar {
+      background: var(--cream-2); border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .browser-dot { width: 11px; height: 11px; border-radius: 50%; }
+    .browser-dot:nth-child(1) { background: #FF5F57; }
+    .browser-dot:nth-child(2) { background: #FEBC2E; }
+    .browser-dot:nth-child(3) { background: #28C840; }
+
+    .browser-url {
+      flex: 1; background: var(--white); border: 1px solid var(--border);
+      border-radius: 6px; padding: 4px 12px; font-size: 0.75rem;
+      color: var(--ink-3); text-align: center; max-width: 260px; margin: 0 auto;
+    }
+
+    .demo-content {
+      padding: 28px 32px; font-size: 0.95rem; line-height: 1.9;
+      color: var(--ink-2); text-align: left; position: relative;
+    }
+
+    .demo-selected {
+      background: #BFDBFE; color: var(--blue-dark);
+      border-radius: 3px; padding: 1px 3px;
+      font-weight: 500; cursor: default;
+      position: relative; display: inline-block;
+    }
+
+    /* Animated tooltip above selected word */
+    .demo-tooltip {
+      position: absolute;
+      top: -10px; left: 50%; transform: translateX(-50%) translateY(-100%);
+      width: 270px;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 14px; box-shadow: var(--shadow-lg);
+      font-family: var(--font-sans); font-size: 13px;
+      animation: tooltipPop 0.3s 1.2s cubic-bezier(0.34,1.56,0.64,1) both;
+      z-index: 10;
+    }
+    @keyframes tooltipPop {
+      from { opacity:0; transform:translateX(-50%) translateY(calc(-100% + 8px)) scale(0.9); }
+      to   { opacity:1; transform:translateX(-50%) translateY(-100%) scale(1); }
+    }
+
+    .tt-header {
+      padding: 10px 12px 8px;
+      border-bottom: 1px solid var(--cream-2);
+    }
+    .tt-word { font-family: var(--font-serif); font-size: 15px; font-weight: 500; color: var(--ink); }
+    .tt-meta { display:flex; gap:5px; align-items:center; margin-top:3px; }
+    .tt-pos { font-size:10px; background:var(--blue-light); color:#1E3A5F; padding:1px 7px; border-radius:99px; font-weight:500; }
+    .tt-phonetic { font-size:10px; color:var(--ink-3); }
+    .tt-easy { font-size:10px; background:var(--blue-light); color:var(--blue); padding:1px 6px; border-radius:4px; font-weight:500; }
+
+    .tt-body { padding:8px 12px; }
+    .tt-def { font-size:12px; color:var(--ink-2); line-height:1.5; margin-bottom:5px; }
+    .tt-translation { font-size:12px; color:var(--blue); font-weight:500; }
+
+    .tt-footer {
+      display:flex; gap:6px; padding:8px 12px 10px;
+    }
+    .tt-btn {
+      flex:1; height:28px; border-radius:7px;
+      border:1px solid var(--border); background:transparent;
+      font-size:11px; font-weight:500; color:var(--ink-2);
+      cursor:pointer; display:flex; align-items:center; justify-content:center; gap:4px;
+    }
+    .tt-btn-primary { background:var(--blue); border-color:var(--blue); color:#fff; }
+
+    /* ── Section common ── */
+    section { padding: 96px 5%; }
+    .section-label {
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em;
+      text-transform: uppercase; color: var(--blue);
+      margin-bottom: 0.75rem;
+    }
+    .section-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.75rem, 4vw, 2.6rem);
+      font-weight: 600; line-height: 1.2;
+      color: var(--ink); letter-spacing: -0.02em;
+      margin-bottom: 1rem;
+    }
+    .section-sub {
+      font-size: 1.05rem; color: var(--ink-3);
+      max-width: 520px; line-height: 1.7;
+    }
+    .section-header { margin-bottom: 3.5rem; }
+    .section-header.center { text-align: center; }
+    .section-header.center .section-sub { margin: 0 auto; }
+
+    /* ── How it works ── */
+    .how { background: var(--white); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2px;
+      background: var(--border);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .step {
+      background: var(--white);
+      padding: 2.5rem 2rem;
+      position: relative;
+    }
+
+    .step-number {
+      font-family: var(--font-serif);
+      font-size: 3rem; font-weight: 600;
+      color: var(--blue-mid);
+      line-height: 1; margin-bottom: 1.25rem;
+      display: block;
+    }
+
+    .step-title {
+      font-family: var(--font-serif);
+      font-size: 1.15rem; font-weight: 500;
+      color: var(--ink); margin-bottom: 0.6rem;
+    }
+
+    .step-desc { font-size: 0.9rem; color: var(--ink-3); line-height: 1.6; }
+
+    /* ── Features ── */
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .feature-card {
+      background: var(--white);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+      position: relative; overflow: hidden;
+    }
+    .feature-card:hover {
+      border-color: var(--blue-mid);
+      box-shadow: 0 8px 32px rgba(37,99,235,0.08);
+      transform: translateY(-2px);
+    }
+    .feature-card.large { grid-column: span 2; }
+
+    .feature-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: var(--blue-light);
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 1.1rem; font-size: 1.3rem;
+    }
+
+    .feature-title {
+      font-family: var(--font-serif);
+      font-size: 1.1rem; font-weight: 500;
+      color: var(--ink); margin-bottom: 0.5rem;
+    }
+
+    .feature-desc { font-size: 0.875rem; color: var(--ink-3); line-height: 1.6; }
+
+    .feature-badge {
+      position: absolute; top: 1.25rem; right: 1.25rem;
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.05em;
+      padding: 3px 8px; border-radius: 99px;
+      background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A;
+    }
+    .feature-badge.pro { background: var(--blue-light); color: #1E3A5F; border-color: var(--blue-mid); }
+
+    /* ── Pricing ── */
+    .pricing { background: var(--white); }
+
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      max-width: 900px; margin: 0 auto;
+    }
+
+    .pricing-card {
+      background: var(--cream);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 2rem 1.75rem;
+      position: relative;
+      transition: box-shadow 0.2s;
+    }
+    .pricing-card.popular {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: #fff;
+    }
+    .pricing-card:hover { box-shadow: var(--shadow-lg); }
+
+    .pricing-popular-badge {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--blue); color: #fff;
+      font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em;
+      padding: 3px 14px; border-radius: 99px;
+      white-space: nowrap;
+    }
+
+    .pricing-plan {
+      font-size: 0.8rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--ink-3);
+      margin-bottom: 0.75rem;
+    }
+    .pricing-card.popular .pricing-plan { color: rgba(255,255,255,0.6); }
+
+    .pricing-price {
+      font-family: var(--font-serif);
+      font-size: 2.4rem; font-weight: 600; line-height: 1;
+      color: var(--ink); margin-bottom: 0.25rem;
+    }
+    .pricing-card.popular .pricing-price { color: #fff; }
+
+    .pricing-period {
+      font-size: 0.8rem; color: var(--ink-3); margin-bottom: 1.5rem;
+    }
+    .pricing-card.popular .pricing-period { color: rgba(255,255,255,0.5); }
+
+    .pricing-features {
+      list-style: none; display: flex; flex-direction: column; gap: 9px;
+      margin-bottom: 1.75rem;
+    }
+    .pricing-features li {
+      font-size: 0.85rem; color: var(--ink-2);
+      display: flex; align-items: flex-start; gap: 8px;
+      line-height: 1.4;
+    }
+    .pricing-card.popular .pricing-features li { color: rgba(255,255,255,0.85); }
+    .pricing-features li::before {
+      content: '✓'; color: var(--success); font-weight: 700;
+      font-size: 0.8rem; flex-shrink: 0; margin-top: 1px;
+    }
+    .pricing-card.popular .pricing-features li::before { color: #86EFAC; }
+    .pricing-features li.muted { opacity: 0.4; }
+    .pricing-features li.muted::before { content: '—'; color: inherit; font-weight: 400; }
+
+    .pricing-cta {
+      width: 100%; text-align: center; padding: 0.7rem;
+      border-radius: var(--radius); font-size: 0.9rem; font-weight: 500;
+      cursor: pointer; border: 1.5px solid var(--border);
+      background: var(--white); color: var(--ink);
+      font-family: var(--font-sans);
+      transition: all 0.18s; text-decoration: none; display: block;
+    }
+    .pricing-cta:hover { background: var(--cream-2); }
+    .pricing-card.popular .pricing-cta {
+      background: var(--blue); border-color: var(--blue); color: #fff;
+    }
+    .pricing-card.popular .pricing-cta:hover { background: var(--blue-dark); }
+
+    /* ── Testimonials / social proof ── */
+    .proof { background: var(--cream); }
+    .proof-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    }
+    .proof-card {
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: var(--radius-lg); padding: 1.5rem;
+    }
+    .proof-stars { color: #F59E0B; font-size: 0.85rem; margin-bottom: 0.75rem; }
+    .proof-text { font-size: 0.875rem; color: var(--ink-2); line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+    .proof-author { display:flex; align-items:center; gap:9px; }
+    .proof-avatar {
+      width:34px; height:34px; border-radius:50%;
+      background: var(--blue-light); color: var(--blue);
+      display:flex; align-items:center; justify-content:center;
+      font-size:0.8rem; font-weight:600;
+    }
+    .proof-name { font-size:0.82rem; font-weight:500; color:var(--ink); }
+    .proof-role { font-size:0.75rem; color:var(--ink-3); }
+
+    /* ── CTA section ── */
+    .cta-section {
+      background: var(--ink);
+      padding: 96px 5%;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute; top: -50%; left: 50%; transform: translateX(-50%);
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(37,99,235,0.25) 0%, transparent 70%);
+    }
+    .cta-section .section-title { color: #fff; position: relative; z-index: 1; }
+    .cta-section .section-sub { color: rgba(255,255,255,0.6); position: relative; z-index: 1; margin: 0 auto 2.5rem; }
+    .cta-section .hero-ctas { position: relative; z-index: 1; }
+    .cta-section .btn-outline { border-color: rgba(255,255,255,0.2); color: #fff; }
+    .cta-section .btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── Footer ── */
+    footer {
+      background: var(--ink);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 2.5rem 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-logo {
+      display:flex; align-items:center; gap:8px;
+      font-family: var(--font-serif); font-size:1rem; font-weight:500;
+      color: rgba(255,255,255,0.7); text-decoration:none;
+    }
+    .footer-links { display:flex; gap:1.5rem; flex-wrap:wrap; }
+    .footer-links a { font-size:0.82rem; color:rgba(255,255,255,0.45); text-decoration:none; transition:color 0.15s; }
+    .footer-links a:hover { color:rgba(255,255,255,0.8); }
+    .footer-copy { font-size:0.78rem; color:rgba(255,255,255,0.3); }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity:0; transform:translateY(20px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .steps { grid-template-columns: 1fr; }
+      .features-grid { grid-template-columns: 1fr; }
+      .feature-card.large { grid-column: span 1; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+      .proof-grid { grid-template-columns: 1fr; }
+      nav .nav-links { display: none; }
+    }
+
+    @media (max-width: 600px) {
+      section { padding: 64px 5%; }
+      .hero { padding: 80px 5% 60px; }
+      .demo-content { padding: 20px; font-size: 0.875rem; }
+      footer { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Nav ── -->
+  <nav id="navbar">
+    <a href="/" class="nav-logo">
+      <div class="nav-logo-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      Readic
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+    </ul>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a href="/login" class="btn btn-outline" style="padding:0.45rem 1rem;font-size:0.85rem">Log in</a>
+      <a href="/register" class="btn btn-primary" style="padding:0.45rem 1rem;font-size:0.85rem">Get started free</a>
+    </div>
+  </nav>
+
+  <!-- ── Hero ── -->
+  <section class="hero">
+    <div class="hero-badge">
+      <div class="hero-badge-dot"></div>
+      Free to get started — no credit card needed
+    </div>
+
+    <h1 class="hero-headline">
+      The <em>smarter</em> way to grow<br/>your vocabulary.
+    </h1>
+
+    <p class="hero-sub">
+      Your personal vocabulary coach, built into your browser.
+      Select any word while reading — get the meaning, translation, and save it to your library instantly.
+    </p>
+
+    <div class="hero-ctas">
+      <a href="/register" class="btn btn-primary btn-xl">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Start for free
+      </a>
+      <a href="#how" class="btn btn-outline btn-xl">See how it works</a>
+    </div>
+
+    <p class="hero-note">✦ Works on any website &nbsp;·&nbsp; Chrome extension &nbsp;·&nbsp; Free forever plan</p>
+
+    <!-- Browser mockup with tooltip demo -->
+    <div class="hero-demo">
+      <div class="demo-browser">
+        <div class="demo-browser-bar">
+          <div class="browser-dot"></div>
+          <div class="browser-dot"></div>
+          <div class="browser-dot"></div>
+          <div class="browser-url">en.wikipedia.org/wiki/Linguistics</div>
+        </div>
+        <div class="demo-content">
+          <p>
+            The study of language encompasses a wide range of topics, from the
+            <span class="demo-selected" id="demo-word">
+              ephemeral
+              <!-- Tooltip -->
+              <span class="demo-tooltip">
+                <div class="tt-header">
+                  <div class="tt-word">ephemeral</div>
+                  <div class="tt-meta">
+                    <span class="tt-pos">adjective</span>
+                    <span class="tt-phonetic">/ɪˈfɛm(ə)r(ə)l/</span>
+                    <span class="tt-easy">ih-FEM-er-ul</span>
+                  </div>
+                </div>
+                <div class="tt-body">
+                  <div class="tt-def">Lasting for a very short time; transitory.</div>
+                  <div class="tt-translation">→ क्षणिक</div>
+                </div>
+                <div class="tt-footer">
+                  <button class="tt-btn">🌐 Translate</button>
+                  <button class="tt-btn tt-btn-primary">🔖 Save</button>
+                </div>
+              </span>
+            </span>
+            nature of spoken dialects to the complex syntactic structures that
+            underpin written communication across cultures and centuries.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── How it works ── -->
+  <section class="how" id="how">
+    <div class="section-header center reveal">
+      <div class="section-label">How it works</div>
+      <h2 class="section-title">Three steps to never forget a word</h2>
+      <p class="section-sub">Readic fits seamlessly into your reading habit — no switching tabs, no breaking your flow.</p>
+    </div>
+
+    <div class="steps reveal">
+      <div class="step">
+        <span class="step-number">01</span>
+        <div class="step-title">Select any word</div>
+        <p class="step-desc">Highlight any single word on any website. A tooltip appears instantly above it with the definition, easy pronunciation, and an audio button.</p>
+      </div>
+      <div class="step">
+        <span class="step-number">02</span>
+        <div class="step-title">Translate & understand</div>
+        <p class="step-desc">On the Useful and Effective plans, one click translates your saved words into your native language — Hindi, Bengali, Tamil, or more. No new tab. No interruption.</p>
+      </div>
+      <div class="step">
+        <span class="step-number">03</span>
+        <div class="step-title">Save & master it</div>
+        <p class="step-desc">Hit save and the word goes straight into your personal library with its context, source page, and translation. Then practise with flashcards, fill-in-the-blank, or dictation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ── -->
+  <section id="features" style="background:var(--cream)">
+    <div class="section-header reveal">
+      <div class="section-label">Features</div>
+      <h2 class="section-title">Everything you need to read smarter</h2>
+      <p class="section-sub">Built for students, professionals, and anyone who reads in English and wants to actually remember what they learn.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Instant definitions</div>
+        <p class="feature-desc">Select a word — get the meaning, part of speech, phonetic, easy pronunciation, and an example sentence. All without leaving the page.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <span class="feature-badge pro">USEFUL</span>
+        <div class="feature-icon">🌐</div>
+        <div class="feature-title">One-tap translation</div>
+        <p class="feature-desc">Translate any saved word into Hindi, Bengali, Tamil, Telugu, and more. Powered by your native language setting in your profile.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon">📚</div>
+        <div class="feature-title">Personal word library</div>
+        <p class="feature-desc">Every saved word is stored with its definition, translation, the sentence it appeared in, and the website you found it on. Your library grows with you.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <div class="feature-icon">🧠</div>
+        <div class="feature-title">Practice modes</div>
+        <p class="feature-desc">Flashcards, fill-in-the-blank, and dictation — three ways to drill your saved words until they stick. Mastery level tracked for every word.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <span class="feature-badge pro">USEFUL</span>
+        <div class="feature-icon">💡</div>
+        <div class="feature-title">Word for a meaning</div>
+        <p class="feature-desc">Describe a feeling or idea in plain words — Readic finds the exact word for it. Perfect for writers and anyone building precise vocabulary.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <span class="feature-badge pro">USEFUL</span>
+        <div class="feature-icon">🗣️</div>
+        <div class="feature-title">Weekly AI conversation</div>
+        <p class="feature-desc">Have a short conversation with an AI that gently pushes you to use your saved words naturally, then get feedback on your grammar and usage. The most human way to learn vocabulary.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <span class="feature-badge pro">USEFUL</span>
+        <div class="feature-icon">🎯</div>
+        <div class="feature-title">Weekly situational challenge</div>
+        <p class="feature-desc">Each week, respond to a real-world situation (given in your native language) in 120–150 words. Get reviewed feedback on your grammar and vocabulary usage.</p>
+      </div>
+
+      <div class="feature-card reveal">
+        <span class="feature-badge pro">USEFUL</span>
+        <div class="feature-icon">📝</div>
+        <div class="feature-title">Weekly fill-in-the-blank test</div>
+        <p class="feature-desc">A fresh paragraph built entirely from the words you've saved that week — fill in the blanks to prove you've actually retained them.</p>
+      </div>
+
+      <div class="feature-card large reveal">
+        <span class="feature-badge">EFFECTIVE</span>
+        <div class="feature-icon">🎓</div>
+        <div class="feature-title">Profession-specific vocabulary training</div>
+        <p class="feature-desc">Tell us your field — aviation, teaching, economics, gaming, and more — and get weekly situational usage training built around the vocabulary that actually matters for your work.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Social proof ── -->
+  <section class="proof" id="proof">
+    <div class="section-header center reveal">
+      <div class="section-label">Early users love it</div>
+      <h2 class="section-title">Built for readers like you</h2>
+    </div>
+
+    <div class="proof-grid">
+      <div class="proof-card reveal">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"I used to open a new tab every time I hit an unknown word. Now I just select it. The tooltip is so fast I barely notice it. My vocabulary has actually improved."</p>
+        <div class="proof-author">
+          <div class="proof-avatar">AR</div>
+          <div>
+            <div class="proof-name">Arjun R.</div>
+            <div class="proof-role">Engineering student, Delhi</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"The Hindi translation is what got me. I read English articles for work but some words just don't click until I see them in Hindi. Readic does this in one click."</p>
+        <div class="proof-author">
+          <div class="proof-avatar">PS</div>
+          <div>
+            <div class="proof-name">Priya S.</div>
+            <div class="proof-role">Marketing professional, Mumbai</div>
+          </div>
+        </div>
+      </div>
+      <div class="proof-card reveal">
+        <div class="proof-stars">★★★★★</div>
+        <p class="proof-text">"The practice mode is genuinely fun. Seeing my mastery level go up on words I used to always forget is weirdly satisfying. Like Duolingo but for words I actually care about."</p>
+        <div class="proof-author">
+          <div class="proof-avatar">NK</div>
+          <div>
+            <div class="proof-name">Nisha K.</div>
+            <div class="proof-role">UPSC aspirant, Bangalore</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Pricing ── -->
+  <section class="pricing" id="pricing">
+    <div class="section-header center reveal">
+      <div class="section-label">Pricing</div>
+      <h2 class="section-title">Start free, upgrade when ready</h2>
+      <p class="section-sub">No credit card needed to get started. Upgrade to Useful or Effective when you want more.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="pricing-card reveal">
+        <div class="pricing-plan">New Start</div>
+        <div class="pricing-price">$0</div>
+        <div class="pricing-period">forever</div>
+        <ul class="pricing-features">
+          <li>Unlimited word lookups via extension</li>
+          <li>Save up to 20 words / month</li>
+          <li>7 days history</li>
+          <li>3 card games / day</li>
+          <li class="muted">Translation to native language</li>
+          <li class="muted">Weekly AI conversation</li>
+          <li class="muted">Weekly challenges & tests</li>
+        </ul>
+        <a href="/register" class="pricing-cta">Get started free</a>
+      </div>
+
+      <!-- Useful -->
+      <div class="pricing-card popular reveal">
+        <div class="pricing-popular-badge">Most popular</div>
+        <div class="pricing-plan">Useful</div>
+        <div class="pricing-price">$1.99</div>
+        <div class="pricing-period">per month</div>
+        <ul class="pricing-features">
+          <li>Save 40 words / month</li>
+          <li>1 month history</li>
+          <li>Translation for saved words</li>
+          <li>5 card games / day</li>
+          <li>20 credits for Word-for-meaning</li>
+          <li>Weekly AI conversation using your saved words</li>
+          <li>Weekly situational proficiency challenge</li>
+          <li>Weekly fill-in-the-blank test on your saved words</li>
+        </ul>
+        <a href="/register" class="pricing-cta">Start Useful free trial</a>
+      </div>
+
+      <!-- Effective -->
+      <div class="pricing-card reveal">
+        <div class="pricing-plan">Effective</div>
+        <div class="pricing-price">$4.99</div>
+        <div class="pricing-period">per month</div>
+        <ul class="pricing-features">
+          <li>Everything in Useful</li>
+          <li>3 months history</li>
+          <li>2 AI conversations / week</li>
+          <li>60 credits for Word-for-meaning</li>
+          <li>Profession-specific vocabulary training (aviation, teaching, economics, gaming & more)</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="/register" class="pricing-cta">Get Effective</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Final CTA ── -->
+  <section class="cta-section">
+    <h2 class="section-title reveal" style="max-width:560px;margin:0 auto 1rem">
+      Start reading smarter today
+    </h2>
+    <p class="section-sub reveal">
+      Join thousands of students and professionals building their vocabulary word by word, one reading session at a time.
+    </p>
+    <div class="hero-ctas reveal">
+      <a href="/register" class="btn btn-primary btn-xl">Create free account</a>
+      <a href="#how" class="btn btn-outline btn-xl">Learn more</a>
+    </div>
+  </section>
+
+  <!-- ── Footer ── -->
+  <footer>
+    <a href="/" class="footer-logo">
+      <div class="nav-logo-mark" style="width:24px;height:24px;border-radius:6px">
+        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" style="width:12px;height:12px">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+        </svg>
+      </div>
+      Readic
+    </a>
+    <div class="footer-links">
+  <a href="#how">How it works</a>
+  <a href="#features">Features</a>
+  <a href="#pricing">Pricing</a>
+  <a href="/login">Log in</a>
+  <a href="/register">Sign up</a>
+  <a href="/privacy-policy.html">Privacy Policy</a>
+  <a href="/terms-of-service.html">Terms of Service</a>
+  <a href="/refund-policy.html">Refund Policy</a>
+</div>
+    <div class="footer-copy">© 2026 Readic. All rights reserved.</div>
+  </footer>
+
+  <script>
+    // Navbar scroll effect
+    const navbar = document.getElementById('navbar')
+    window.addEventListener('scroll', () => {
+      navbar.classList.toggle('scrolled', window.scrollY > 20)
+    }, { passive: true })
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal')
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry, i) => {
+        if (entry.isIntersecting) {
+          setTimeout(() => entry.target.classList.add('visible'), i * 80)
+          observer.unobserve(entry.target)
+        }
+      })
+    }, { threshold: 0.1 })
+    reveals.forEach(el => observer.observe(el))
+
+    // Smooth internal links
+    document.querySelectorAll('a[href^="#"]').forEach(a => {
+      a.addEventListener('click', e => {
+        e.preventDefault()
+        document.querySelector(a.getAttribute('href'))?.scrollIntoView({ behavior: 'smooth' })
+      })
+    })
+  </script>
+ 
+</div>
+</body>
+</html>
